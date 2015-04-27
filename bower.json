@@ -1,6 +1,6 @@
 {
   "name": "ingrown_toenail",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/codecraft63/ingrown_toenail",
   "authors": [
     "Pedro Faria <pedro@codecraft63.com>",
@@ -9,7 +9,8 @@
   "description": "Javascript libraries made and used by Codecraft63",
   "main": "main.js",
   "keywords": [
-    "angular"
+    "angular",
+    "foundation"
   ],
   "license": "MIT",
   "ignore": [

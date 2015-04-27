@@ -8,9 +8,11 @@
         ngApp: 'App',
         apiUrl: angular.element('link[rel=api]').attr('href') || '/',
         angular: angular,
+        autoReady: true,
         _triggers: {
             'before.init': [],
-            'after.init': []
+            'after.init': [],
+            'lazy.init': []
         },
 
         setName: function(name) {
@@ -18,7 +20,7 @@
         },
 
         setVersion: function(version) {
-            this.verson = version;
+            this.version = version;
         },
 
         setCodename: function(codename) {
@@ -60,7 +62,7 @@
         },
 
         _initApp: function() {
-            this.ng = angular.module(this.ngthis, [
+            this.ng = angular.module(this.ngApp, [
                 'ngRoute',
                 'ngAnimate',
                 this.ngName('routes'),
@@ -90,14 +92,30 @@
         },
 
         init: function() {
-            try {
-                this.trigger('before.init');
-                this._initAngular();
-                this._initApp();
+            if (angular.isDefined(arguments[0])) {
+                angular.extend(this, arguments[0]);
+            }
 
-                angular.bootstrap(document, [this.ngApp]);
-                this.trigger('after.init');
-            } catch (e) {}
+            this._initAngular();
+            this._initApp();
+
+            if (angular.isDefined(this.autoReady) && this.autoReady === true) {
+                this.registerReady();
+            }
+            
+            return this;
+        },
+
+        registerReady: function() {
+            var dis = this;
+            angular.element(document).ready(function () {
+                try {
+                    dis.trigger('before.init');
+                    angular.bootstrap(document, [dis.ngApp]);
+                    dis.trigger('after.init');
+                    dis.trigger('lazy.init');
+                } catch (e) {}
+            });
         }
     };
 
