@@ -3,7 +3,8 @@ Javascript libraries made and used by our amazing company [Codecraft63](http://c
 
 No more copy and pastes on past projects. Now every single reusable library will be included here.
 
-* [Angularjs](angularjs)
+* [Angularjs with Rails](angularjs/rails_application.js)
+* [Angularjs directive for Foundation Paginator](angularjs/foundation/paginator.js)
 
 ## Instalation
 
