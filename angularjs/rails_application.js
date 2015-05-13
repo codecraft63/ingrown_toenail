@@ -51,14 +51,34 @@
             this._triggers[eventName].push(cb);
         },
 
+        _modules: {
+            'routes': [],
+            'filters': [],
+            'services': [],
+            'resources': ['ngResource'],
+            'validations': [],
+            'directives': [],
+            'controllers': ['ngSanitize']
+        },
+
+        useModule: function(resource, modules) {
+            if (angular.isUndefined(this._modules[resource])) {
+                return false;
+            }
+
+            if (angular.isString(modules)) {
+                this._modules[resource].push(modules);
+            }
+            else if (angular.isArray(modules)) {
+                this._modules[resource].concat(modules);
+            }
+        },
+
         _initAngular: function() {
-            angular.module(this.ngName('routes'), []);
-            angular.module(this.ngName('filters'), []);
-            angular.module(this.ngName('services'), []);
-            angular.module(this.ngName('resources'), ['ngResource']);
-            angular.module(this.ngName('validations'), []);
-            angular.module(this.ngName('directives'), []);
-            angular.module(this.ngName('controllers'), ['ngSanitize']);
+            var dis = this;
+            angular.forEach(Object.keys(this._modules), function(resource) {
+                angular.module(dis.ngName(resource), dis._modules[resource]);
+            });
         },
 
         _initApp: function() {
