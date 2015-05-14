@@ -1,149 +1,163 @@
 (function (window, document, angular) {
     "use strict";
 
-    var app = {
-        name: null,
-        version: null,
-        codename: null,
-        ngApp: 'App',
-        apiUrl: angular.element('link[rel=api]').attr('href') || '/',
-        angular: angular,
-        autoReady: true,
-        _triggers: {
-            'before.init': [],
-            'after.init': [],
-            'lazy.init': []
-        },
+    function ModuleDependencies(defaults) {
+        var modules = [];
 
-        setName: function(name) {
-            this.name = name;
-        },
+        angular.extend(modules, defaults);
 
-        setVersion: function(version) {
-            this.version = version;
-        },
+        return {
+            get: function(key) {
+                return modules[key]
+            },
 
-        setCodename: function(codename) {
-            this.codename = codename;
-        },
+            add: function(key, value) {
+                if (angular.isUndefined(modules[key])) {
+                    modules[key] = [];
+                } 
+                    
+                modules[key].push(value)
 
-        setNgApp: function(ngApp) {
-            this.ngApp = ngApp;
-        },
+                return this;
+            },
 
-        setApiUrl: function(url) {
-            this.apiUrl = url;
-        },
+            set: function(key, value) {
+                modules[key] = value;
+                return this;
+            },
 
-        ngName: function (suffix) {
-            return this.ngApp + '.' + suffix;
-        },
-
-        resourceUrl: function (uri) {
-            return this.apiUrl + uri + '.json';
-        },
-
-        on: function(eventName, cb) {
-            if (angular.isUndefined(this._triggers[eventName])) {
-                return false;
+            keys: function() {
+                return Object.keys(modules);
             }
-
-            this._triggers[eventName].push(cb);
-
-            return this;
-        },
-
-        _modules: {
-            'routes': [],
-            'filters': [],
-            'services': [],
-            'resources': ['ngResource'],
-            'validations': [],
-            'directives': [],
-            'controllers': ['ngSanitize']
-        },
-
-        useModule: function(resource, modules) {
-            if (angular.isUndefined(this._modules[resource])) {
-                return false;
-            }
-
-            if (angular.isString(modules)) {
-                this._modules[resource].push(modules);
-            }
-            else if (angular.isArray(modules)) {
-                this._modules[resource].concat(modules);
-            }
-
-            return this;
-        },
-
-        _initAngular: function() {
-            var dis = this;
-            angular.forEach(Object.keys(this._modules), function(resource) {
-                angular.module(dis.ngName(resource), dis._modules[resource]);
-            });
-        },
-
-        _initApp: function() {
-            this.ng = angular.module(this.ngApp, [
-                'ngRoute',
-                'ngAnimate',
-                this.ngName('routes'),
-                this.ngName('filters'),
-                this.ngName('services'),
-                this.ngName('resources'),
-                this.ngName('validations'),
-                this.ngName('directives'),
-                this.ngName('controllers')
-            ]);
-
-            this.ng.config(['$httpProvider', function ($httpProvider) {
-                $httpProvider.defaults.headers.common['X-CSRF-Token'] = $('meta[name=csrf-token]').attr('content');
-                $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
-            }]);
-        },
-
-        trigger: function(eventName) {
-            if (angular.isUndefined(this._triggers[eventName])) {
-                return false;
-            }
-
-            var dis = this;
-            angular.forEach(this._triggers[eventName], function(cb) {
-                cb.apply(this);
-            }, dis);
-
-            return this;
-        },
-
-        init: function() {
-            if (angular.isDefined(arguments[0])) {
-                angular.extend(this, arguments[0]);
-            }
-
-            this._initAngular();
-            this._initApp();
-
-            if (angular.isDefined(this.autoReady) && this.autoReady === true) {
-                this.registerReady();
-            }
-            
-            return this;
-        },
-
-        registerReady: function() {
-            var dis = this;
-            angular.element(document).ready(function () {
-                try {
-                    dis.trigger('before.init');
-                    angular.bootstrap(document, [dis.ngApp]);
-                    dis.trigger('after.init');
-                    dis.trigger('lazy.init');
-                } catch (e) {}
-            });
         }
-    };
+    }
 
-    window.app = window.app || app;
+    function EventManager(defaults) {
+        var events = {};
+
+        angular.forEach(defaults, function(value) {
+            events[value] = [];
+        });
+
+        return {
+            on: function(eventName, callback) {
+                if (angular.isUndefined(events[eventName])) {
+                    return false;
+                }
+
+                events[eventName].push(callback);
+
+                return this;
+            },
+
+            trigger: function(eventName, context) {
+                if (angular.isUndefined(events[eventName])) {
+                    return false;
+                }
+
+                angular.forEach(events[eventName], function (cb) {
+                    cb.apply(this);
+                }, context);
+
+                return this;
+            }
+        }
+    }
+
+
+    function AngularApp() {
+        var settings,
+            events = new EventManager(['before.init', 'after.init', 'lazy.init']),
+            mainDependencies
+        ;
+
+        settings = {
+            name: null,
+            version: null,
+            codename: null,
+            ngApp: 'app',
+            apiUrl: angular.element('link[rel=api]').attr('href') || '/'
+        };
+
+        mainDependencies = function () {
+            var module = new ModuleDependencies({
+                'main': ['ngRoute', 'ngAnimate']
+            });
+
+            return {
+                get: function() { return module.get('main'); },
+                add: function(value) { return module.add('main', value); return api; },
+                set: function(value) { return module.set('main', value); return api; }
+            }
+        };
+
+        return {
+            config: function(config) {
+                if (angular.isDefined(config)) {
+                    angular.extend(settings, config);
+                }
+
+                return settings;
+            },
+
+            ngName: function(suffix) {
+                return settings.ngApp + '.' + suffix;
+            },
+
+            resourceUrl: function (uri) {
+                return settings.apiUrl + uri + '.json';
+            },
+
+            mainModule: mainDependencies(),
+            modules: = new ModuleDependencies({
+                'filters': [],
+                'services': [],
+                'resources': ['ngResource'],
+                'validations': [],
+                'directives': [],
+                'controllers': ['ngSanitize']
+            }),
+
+            on: function(eventName, callback) {
+                events.on(eventName, callback);
+                return this;
+            },
+
+            initAngular: function () {
+                angular.forEach(modulesDependencies.keys(), function(resource) {
+                    var moduleName = this.ngName(resource);
+                    angular.module(moduleName, this.modules.get(resource));
+                    this.mainModule.add(moduleName);
+                }, this);
+
+                this.ng = angular.module(settings.ngApp, this.mainModule.get());
+
+                this.ng.config(['$httpProvider', function ($httpProvider) {
+                    var csrfToken = angular.element('meta[name="csrf-token"]').attr('content');
+                    $httpProvider.defaults.headers.common['X-CSRF-Token'] = csrfToken; 
+                    $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
+                }]);
+            },
+
+            bootstrap: function() {
+                angular.element(document).ready(function () {
+                    try {
+                        events.trigger('before.init');
+                        angular.bootstrap(document, [settings.ngApp]);
+                        events.trigger('after.init');
+                        events.trigger('lazy.init');
+                    } catch (e) {}
+                });
+            },
+
+            init: function() {
+                this.initAngular();
+                this.bootstrap();
+
+                return this;
+            }
+        }
+    }
+
+    window.app = window.app || new AngularApp();
 }(window, window.document, window.angular));
