@@ -68,7 +68,8 @@
     function AngularApp() {
         var settings,
             events = new EventManager(['before.init', 'after.init', 'lazy.init']),
-            mainDependencies
+            mainDependencies,
+            modulesDependencies
         ;
 
         settings = {
@@ -91,6 +92,15 @@
             }
         };
 
+        modulesDependencies = new ModuleDependencies({
+            'filters': [],
+            'services': [],
+            'resources': ['ngResource'],
+            'validations': [],
+            'directives': [],
+            'controllers': ['ngSanitize']
+        });
+
         return {
             config: function(config) {
                 if (angular.isDefined(config)) {
@@ -109,14 +119,7 @@
             },
 
             mainModule: mainDependencies(),
-            modules: = new ModuleDependencies({
-                'filters': [],
-                'services': [],
-                'resources': ['ngResource'],
-                'validations': [],
-                'directives': [],
-                'controllers': ['ngSanitize']
-            }),
+            modules: modulesDependencies,
 
             on: function(eventName, callback) {
                 events.on(eventName, callback);
