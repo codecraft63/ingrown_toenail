@@ -49,6 +49,8 @@
             }
 
             this._triggers[eventName].push(cb);
+
+            return this;
         },
 
         _modules: {
@@ -72,6 +74,8 @@
             else if (angular.isArray(modules)) {
                 this._modules[resource].concat(modules);
             }
+
+            return this;
         },
 
         _initAngular: function() {
@@ -109,6 +113,8 @@
             angular.forEach(this._triggers[eventName], function(cb) {
                 cb.apply(this);
             }, dis);
+
+            return this;
         },
 
         init: function() {
