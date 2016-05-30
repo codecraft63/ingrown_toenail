@@ -12,9 +12,9 @@
         return {
             restrict: 'EA',
             scope: {
-                numPages: '=',
-                currentPage: '=',
-                maxSize: '=',
+                numPages: '=*',
+                currentPage: '=*',
+                maxSize: '=*',
                 onSelectPage: '&'
             },
             template: '<ul class="pagination"><li ng-repeat="page in pages" ng-class="{current: page.active, unavailable: page.disabled}"><a ng-click="selectPage(page.number)">{{page.text}}</a></li></ul>',
@@ -39,7 +39,7 @@
                 scope.$watch('numPages + currentPage + maxSize', function() {
                     scope.pages = [];
                     scope.currentPage = parseInt(scope.currentPage);
-
+                    
                     // Default page limits
                     var startPage = 1, endPage = scope.numPages;
 
